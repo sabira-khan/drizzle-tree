@@ -1,5 +1,7 @@
 # drizzle-tree
 
+[![CI](https://github.com/sabira-khan/drizzle-tree/actions/workflows/ci.yml/badge.svg)](https://github.com/sabira-khan/drizzle-tree/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/drizzle-tree)](https://www.npmjs.com/package/drizzle-tree)
+
 Recursive tree queries for [Drizzle ORM](https://orm.drizzle.team). Point it at a table with a `parent_id` column and get descendants, ancestors and whole forests back as typed rows, with `depth` and `path` added.
 
 ```ts
