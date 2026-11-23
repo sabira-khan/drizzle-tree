@@ -1,0 +1,63 @@
+{
+  "name": "drizzle-tree",
+  "version": "0.1.0",
+  "description": "Recursive tree queries for Drizzle ORM: descendants, ancestors and whole forests from a parent_id column, as typed CTEs you can join, filter and paginate.",
+  "keywords": [
+    "drizzle",
+    "drizzle-orm",
+    "tree",
+    "hierarchy",
+    "adjacency-list",
+    "recursive",
+    "cte",
+    "with-recursive",
+    "postgres",
+    "sqlite",
+    "categories",
+    "nested"
+  ],
+  "license": "MIT",
+  "author": "Sabira Khan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sabira-khan/drizzle-tree.git"
+  },
+  "homepage": "https://github.com/sabira-khan/drizzle-tree#readme",
+  "bugs": "https://github.com/sabira-khan/drizzle-tree/issues",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./pg": {
+      "types": "./dist/pg.d.ts",
+      "default": "./dist/pg.js"
+    },
+    "./sqlite": {
+      "types": "./dist/sqlite.d.ts",
+      "default": "./dist/sqlite.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=0.40.0 || >=1.0.0-rc.6"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "@libsql/client": "^0.18.0",
+    "@types/node": "^26.6.6",
+    "drizzle-orm": "0.45.4",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}
