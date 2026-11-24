@@ -1,6 +1,6 @@
 import { getTableColumns, getTableName, sql, type Column, type SQL, type Table } from 'drizzle-orm'
 
-export type Dialect = 'pg' | 'sqlite'
+export type Dialect = 'pg' | 'sqlite' | 'mysql'
 
 export interface TreeConfig<TTable extends Table> {
   id: Column
@@ -58,8 +58,15 @@ export function resolveTree(table: Table, config: TreeConfig<Table>, dialect: Di
   }
 }
 
-function asText(value: SQL | Column): SQL {
+function asText(dialect: Dialect, value: SQL | Column, wide = false): SQL {
+  if (dialect === 'mysql') {
+    return wide ? sql`cast(${value} as char(65535))` : sql`cast(${value} as char)`
+  }
   return sql`cast(${value} as text)`
+}
+
+function concat(dialect: Dialect, ...parts: SQL[]): SQL {
+  return dialect === 'mysql' ? sql`concat(${sql.join(parts, sql`, `)})` : sql`(${sql.join(parts, sql` || `)})`
 }
 
 function contains(dialect: Dialect, haystack: SQL, needle: SQL): SQL {
@@ -90,13 +97,14 @@ function traversal(tree: ResolvedTree, options: TraversalOptions, direction: 'do
   const join = direction === 'down'
     ? sql`${tree.parentId} = ${r}.${sql.identifier(tree.id.name)}`
     : sql`${tree.id} = ${r}.${sql.identifier(tree.parentId.name)}`
-  const visited = sql`(${separator} || ${r}.${path} || ${separator})`
-  const current = sql`(${separator} || ${asText(tree.id)} || ${separator})`
+  const d = tree.dialect
+  const visited = concat(d, separator, sql`${r}.${path}`, separator)
+  const current = concat(d, separator, asText(d, tree.id), separator)
   const depthLimit = options.maxDepth === undefined ? sql`` : sql` and ${r}.${depth} < ${options.maxDepth}`
   const keepSelf = options.includeSelf ?? options.of === undefined
   const outerFilter = keepSelf ? sql`` : sql` where ${depth} > 0`
 
-  return sql`with recursive ${r} as (select ${columnList}, 0 as ${depth}, ${asText(tree.id)} as ${path} from ${tree.table} where ${anchor}${where} union all select ${columnList}, ${r}.${depth} + 1, ${r}.${path} || ${separator} || ${asText(tree.id)} from ${tree.table} join ${r} on ${join} where not ${contains(tree.dialect, visited, current)}${depthLimit}${where}) select * from ${r}${outerFilter}`
+  return sql`with recursive ${r} as (select ${columnList}, 0 as ${depth}, ${asText(d, tree.id, true)} as ${path} from ${tree.table} where ${anchor}${where} union all select ${columnList}, ${r}.${depth} + 1, ${concat(d, sql`${r}.${path}`, separator, asText(d, tree.id))} from ${tree.table} join ${r} on ${join} where not ${contains(tree.dialect, visited, current)}${depthLimit}${where}) select * from ${r}${outerFilter}`
 }
 
 export function descendantsSql(tree: ResolvedTree, options: TraversalOptions): SQL {

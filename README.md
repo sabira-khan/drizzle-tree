@@ -48,15 +48,19 @@ npm install drizzle-tree
 
 | | Tested in CI |
 |---|---|
-| Databases | PostgreSQL (`drizzle-tree/pg`), SQLite (`drizzle-tree/sqlite`) |
+| Databases | PostgreSQL (`drizzle-tree/pg`), SQLite (`drizzle-tree/sqlite`), MySQL 8.0+ (`drizzle-tree/mysql`) |
 | drizzle-orm | 0.40, 0.44, 0.45, 1.0.0-rc.6 |
 | Node.js | 20, 22, 24 |
 
-Tests run against PGlite and libSQL. Any Drizzle driver for these databases should work, since the package only uses the public query builder. MySQL is planned.
+Tests run against PGlite, libSQL and MySQL 8.4. Any Drizzle driver for these databases should work, since the package only uses the public query builder.
+
+MySQL needs version 8.0 or later, since earlier versions have no recursive CTEs. MySQL stops a recursive query after 1000 levels by default. For deeper trees, raise `cte_max_recursion_depth` for the session, or pass `maxDepth`.
 
 ## API
 
 ### `defineTree(table, config)`
+
+Import it from the entry point for your database: `drizzle-tree/pg`, `drizzle-tree/sqlite` or `drizzle-tree/mysql`.
 
 ```ts
 const tree = defineTree(table, {
